@@ -1,0 +1,51 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: build-image
+spec:
+  workspaces:
+  - name: source # Name of the workspace in the Pipeline
+  tasks:
+  - name: git-clone
+    workspaces:
+    - name: output
+      workspace: source
+    taskRef:
+      name: git-clone
+    params:
+    - name: url
+      value: https://github.com/viglesiasce/sample-app
+    - name: revision
+      value: kpt
+  - name: output
+    workspaces:
+    - name: output
+      workspace: source
+    runAfter:
+    - git-clone
+    taskSpec:
+      workspaces:
+      - name: output
+      steps:
+      - name: echo
+        image: ubuntu
+        command:
+        - ls
+        args:
+        - "-la"
+        - "/workspace/output"
+  - name: build
+    workspaces:
+    - name: source # this workspace name must be declared in the Task
+      workspace: source
+    taskRef:
+      name: kaniko
+    runAfter:
+    - output
+    params:
+    - name: IMAGE
+      value: viglesiasce/sample-app-frontend
+    - name: CONTEXT
+      value: cmd/frontend
+    - name: DOCKERFILE
+      value: Dockerfile

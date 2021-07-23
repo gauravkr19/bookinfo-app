@@ -1,0 +1,20 @@
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  name: build-docker-image-from-git-product-task-run
+spec:
+  serviceAccountName: dockerhub-service
+  taskRef:
+    name: build-docker-image-from-git-product
+  params:
+    - name: pathToDockerFile
+      value: Dockerfile
+  resources:
+    inputs:
+      - name: git-source
+        resourceRef:
+          name: istio-product-in
+    outputs:
+      - name: builtImage
+        resourceRef:
+          name: istio-product-img
